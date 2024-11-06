@@ -60,11 +60,22 @@ def search_for_email():
         if msg.is_multipart():
             for part in msg.walk():
                 if part.get_content_type() == "text/html":
-                    html_content = part.get_payload(decode=True).decode()
-                    links.extend(extract_link_from_html(html_content))
+                    html_content = part.get_payload(decode=True)
+                    try:
+                        decoded_content = html_content.decode("utf-8")
+                    except UnicodeDecodeError:
+                        # Try decoding with a different encoding if UTF-8 fails
+                        decoded_content = html_content.decode("ISO-8859-1")  # or "windows-1252"
+                    print(decoded_content)
+                    links.append(decoded_content)  # Collecting links if needed
         else:
             content_type = msg.get_content_type()
-            content = msg.get_payload(decode=True).decode()
+            content = msg.get_payload(decode=True)
+
+            try:
+                decoded_content = content.decode("utf-8")
+            except UnicodeDecodeError:
+                decoded_content = content.decode("ISO-8859-1")  # or "windows-1252"
 
             if content_type == "text/html":
                links.extend(extract_link_from_html(content))
